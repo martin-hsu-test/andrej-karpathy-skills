@@ -84,7 +84,9 @@ install_gemini_md() {
     # Ensure separation from prior content.
     [[ -s "$GEMINI_MD" ]] && echo ""
     echo "$begin"
-    cat "$SOURCE_MD"
+    # Rewrite the "# CLAUDE.md" title to a tool-neutral one so Gemini
+    # doesn't see "CLAUDE.md" inside its own context.
+    sed '1s|^# CLAUDE.md$|# Behavioral Guidelines (Karpathy)|' "$SOURCE_MD"
     echo "$end"
   } >> "$GEMINI_MD"
 
