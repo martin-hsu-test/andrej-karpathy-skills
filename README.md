@@ -17,9 +17,12 @@
 
 ## 快速開始
 
+> 本 fork 在原作 [`forrestchang/andrej-karpathy-skills`](https://github.com/forrestchang/andrej-karpathy-skills) 之上加了 Gemini CLI 的 install / uninstall 腳本。
+> **要 clone 這個 fork 才有 `install_gemini-cli.sh`。**
+
 ```bash
-# clone repo
-git clone https://github.com/forrestchang/andrej-karpathy-skills.git
+# clone 本 fork
+git clone https://github.com/martin-hsu-test/andrej-karpathy-skills.git
 cd andrej-karpathy-skills
 
 # 預設安裝（GEMINI.md, user scope）
