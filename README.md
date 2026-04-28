@@ -1,171 +1,137 @@
-# Karpathy-Inspired Claude Code Guidelines
+# 在 Gemini CLI 中使用 Karpathy Guidelines
 
-> Check out my new project [Multica](https://github.com/multica-ai/multica) — an open-source platform for running and managing coding agents with reusable skills.
->
-> Follow me on X: [https://x.com/jiayuan_jy](https://x.com/jiayuan_jy)
+把這份 Karpathy 風格的 LLM 寫程式紀律，安裝到 Gemini CLI 裡。提供兩支腳本：
 
-A single `CLAUDE.md` file to improve Claude Code behavior, derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
+- `install_gemini-cli.sh` — 安裝
+- `uninstall_gemini-cli.sh` — 解除安裝
 
-English | [简体中文](./README.zh.md)
+## 為什麼預設用 `GEMINI.md` 而不是 Skill？
 
-## The Problems
+這份 guidelines 的本質是 **always-on 行為紀律**（不要瞎猜假設、不要過度工程、外科手術式修改、目標導向），不是「特定任務才用」的工具型 skill。
 
-From Andrej's post:
+- **Skill 模式**：靠 description 關鍵字觸發，agent 沒判斷到就完全不生效。Karpathy 想解決的「LLM 瞎猜假設」這種毛病，恰恰最容易發生在 agent **沒意識到自己該謹慎**的時候 → 結構性破口。
+- **GEMINI.md 模式**：每次對話都載入，永遠在線。整份只有 ~70 行，token 成本可忽略。
+- 對應 Karpathy 原 repo：`GEMINI.md 模式 ≈ 原作的 CLAUDE.md`，`Skill 模式 ≈ 原作的 Plugin`。
 
-> "The models make wrong assumptions on your behalf and just run along with them without checking. They don't manage their confusion, don't seek clarifications, don't surface inconsistencies, don't present tradeoffs, don't push back when they should."
+如果你想要「trivial 任務不受拘束」，可以改用 `--mode skill`。
 
-> "They really like to overcomplicate code and APIs, bloat abstractions, don't clean up dead code... implement a bloated construction over 1000 lines when 100 would do."
+## 快速開始
 
-> "They still sometimes change/remove comments and code they don't sufficiently understand as side effects, even if orthogonal to the task."
-
-## The Solution
-
-Four principles in one file that directly address these issues:
-
-| Principle | Addresses |
-|-----------|-----------|
-| **Think Before Coding** | Wrong assumptions, hidden confusion, missing tradeoffs |
-| **Simplicity First** | Overcomplication, bloated abstractions |
-| **Surgical Changes** | Orthogonal edits, touching code you shouldn't |
-| **Goal-Driven Execution** | Leverage through tests-first, verifiable success criteria |
-
-## The Four Principles in Detail
-
-### 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-LLMs often pick an interpretation silently and run with it. This principle forces explicit reasoning:
-
-- **State assumptions explicitly** — If uncertain, ask rather than guess
-- **Present multiple interpretations** — Don't pick silently when ambiguity exists
-- **Push back when warranted** — If a simpler approach exists, say so
-- **Stop when confused** — Name what's unclear and ask for clarification
-
-### 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-Combat the tendency toward overengineering:
-
-- No features beyond what was asked
-- No abstractions for single-use code
-- No "flexibility" or "configurability" that wasn't requested
-- No error handling for impossible scenarios
-- If 200 lines could be 50, rewrite it
-
-**The test:** Would a senior engineer say this is overcomplicated? If yes, simplify.
-
-### 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-
-- Don't "improve" adjacent code, comments, or formatting
-- Don't refactor things that aren't broken
-- Match existing style, even if you'd do it differently
-- If you notice unrelated dead code, mention it — don't delete it
-
-When your changes create orphans:
-
-- Remove imports/variables/functions that YOUR changes made unused
-- Don't remove pre-existing dead code unless asked
-
-**The test:** Every changed line should trace directly to the user's request.
-
-### 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform imperative tasks into verifiable goals:
-
-| Instead of... | Transform to... |
-|--------------|-----------------|
-| "Add validation" | "Write tests for invalid inputs, then make them pass" |
-| "Fix the bug" | "Write a test that reproduces it, then make it pass" |
-| "Refactor X" | "Ensure tests pass before and after" |
-
-For multi-step tasks, state a brief plan:
-
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let the LLM loop independently. Weak criteria ("make it work") require constant clarification.
-
-## Install
-
-**Option A: Claude Code Plugin (recommended)**
-
-From within Claude Code, first add the marketplace:
-```
-/plugin marketplace add forrestchang/andrej-karpathy-skills
-```
-
-Then install the plugin:
-```
-/plugin install andrej-karpathy-skills@karpathy-skills
-```
-
-This installs the guidelines as a Claude Code plugin, making the skill available across all your projects.
-
-**Option B: CLAUDE.md (per-project)**
-
-New project:
 ```bash
-curl -o CLAUDE.md https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md
+# clone repo
+git clone https://github.com/forrestchang/andrej-karpathy-skills.git
+cd andrej-karpathy-skills
+
+# 預設安裝（GEMINI.md, user scope）
+./install_gemini-cli.sh
 ```
 
-Existing project (append):
+完成後新開一個 `gemini` session，這四條原則就會永遠在 context 裡。
+
+## 安裝選項
+
 ```bash
-echo "" >> CLAUDE.md
-curl https://raw.githubusercontent.com/forrestchang/andrej-karpathy-skills/main/CLAUDE.md >> CLAUDE.md
+./install_gemini-cli.sh [--mode MODE] [--scope SCOPE]
 ```
 
-## Using with Cursor
+### `--mode`
 
-This repository includes a committed Cursor project rule ([`.cursor/rules/karpathy-guidelines.mdc`](.cursor/rules/karpathy-guidelines.mdc)) so the same guidelines apply when you open the project in Cursor. See **[CURSOR.md](CURSOR.md)** for setup, using the rule in other projects, and how this relates to Claude Code.
+| 值 | 行為 | 對應原作 |
+|---|---|---|
+| `gemini-md`（預設）| append 到 GEMINI.md，永遠載入 | CLAUDE.md |
+| `skill` | 註冊為 Gemini skill，按需觸發 | Plugin |
+| `both` | 兩個都裝（雙保險） | — |
 
-## Key Insight
+### `--scope`
 
-From Andrej:
+| 值 | GEMINI.md 路徑 | Skill 安裝位置 |
+|---|---|---|
+| `user`（預設）| `~/.gemini/GEMINI.md` | `~/.gemini/skills/` |
+| `workspace` | `$PWD/GEMINI.md` | `./.gemini/skills/` |
 
-> "LLMs are exceptionally good at looping until they meet specific goals... Don't tell it what to do, give it success criteria and watch it go."
+### 範例
 
-The "Goal-Driven Execution" principle captures this: transform imperative instructions into declarative goals with verification loops.
+```bash
+# 全域永遠開啟（最常見）
+./install_gemini-cli.sh
 
-## How to Know It's Working
+# 只在當前專案開啟
+./install_gemini-cli.sh --scope workspace
 
-These guidelines are working if you see:
+# 改用 skill 模式（按需觸發）
+./install_gemini-cli.sh --mode skill
 
-- **Fewer unnecessary changes in diffs** — Only requested changes appear
-- **Fewer rewrites due to overcomplication** — Code is simple the first time
-- **Clarifying questions come before implementation** — Not after mistakes
-- **Clean, minimal PRs** — No drive-by refactoring or "improvements"
+# 雙保險
+./install_gemini-cli.sh --mode both
+```
 
-## Customization
+## 安裝做了什麼
 
-These guidelines are designed to be merged with project-specific instructions. Add them to your existing `CLAUDE.md` or create a new one.
-
-For project-specific rules, add sections like:
+### `--mode gemini-md`
+在 `GEMINI.md` 裡加入一段 fenced block：
 
 ```markdown
-## Project-Specific Guidelines
-
-- Use TypeScript strict mode
-- All API endpoints must have tests
-- Follow the existing error handling patterns in `src/utils/errors.ts`
+<!-- BEGIN karpathy-guidelines -->
+（CLAUDE.md 全文，四大原則）
+<!-- END karpathy-guidelines -->
 ```
 
-## Tradeoff Note
+- **Idempotent**：重跑會替換整段，不會重複 append
+- **不破壞既有內容**：原本 `GEMINI.md` 裡的東西完全保留
 
-These guidelines bias toward **caution over speed**. For trivial tasks (simple typo fixes, obvious one-liners), use judgment — not every change needs the full rigor.
+### `--mode skill`
+等同於：
+```bash
+gemini skills install ./skills/karpathy-guidelines --scope user --consent
+```
 
-The goal is reducing costly mistakes on non-trivial work, not slowing down simple tasks.
+## 驗證安裝
 
-## License
+```bash
+# gemini-md 模式
+grep -c 'karpathy-guidelines' ~/.gemini/GEMINI.md
 
-MIT
+# skill 模式
+gemini skills list | grep karpathy
+
+# 在 gemini 互動模式裡
+/memory show          # 看 GEMINI.md 是否載入
+/skills list          # 看 skill 是否註冊
+```
+
+## 解除安裝
+
+```bash
+./uninstall_gemini-cli.sh                    # user scope
+./uninstall_gemini-cli.sh --scope workspace  # workspace
+```
+
+會做兩件事：
+1. 從 `GEMINI.md` 移除 fenced block（保留其他內容）
+2. 移除 skill（如果有裝）
+
+兩者**不存在時自動跳過**，所以即使你只裝了其中一種也安全。
+
+## 跟原作 Plugin 安裝方式的差異
+
+| 安裝方式 | 適用 CLI | 啟動機制 |
+|---|---|---|
+| 原作 `/plugin install ...` | Claude Code | Plugin 系統 |
+| 原作 `curl ... > CLAUDE.md` | Claude Code | always-on |
+| **這份 `install_gemini-cli.sh`** | **Gemini CLI** | **預設 always-on，可選 skill** |
+
+## 故障排除
+
+**`gemini CLI not found in PATH`**
+→ 先安裝 Gemini CLI：[官方安裝說明](https://github.com/google-gemini/gemini-cli)
+
+**`gemini skills install` 失敗**
+→ 你的 Gemini CLI 版本可能太舊，沒有 skills 子命令。改用預設的 `--mode gemini-md`，不需要 skills 支援。
+
+**重跑後 `GEMINI.md` 變很長**
+→ 不會。腳本用 fenced block，重跑只會替換不會疊加。如果你看到重複，可能是手動編輯時破壞了 `<!-- BEGIN -->` / `<!-- END -->` 標記。
+
+## 設計取捨（誠實說明）
+
+- **偏向 caution over speed**：跟原作一樣的取捨。trivial 任務（typo、明顯一行 fix）會被「請先確認假設」之類的提醒拖慢。如果這對你是問題，用 `--mode skill` 或裝 `--scope workspace` 只在嚴肅專案開啟。
+- **不修改原 repo 其他檔案**：這兩支腳本只新增、不改既有檔案，遵守 Karpathy 第 3 條「Surgical Changes」。
