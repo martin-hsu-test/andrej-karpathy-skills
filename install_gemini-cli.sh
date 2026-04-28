@@ -49,20 +49,8 @@ else
   GEMINI_MD="$PWD/GEMINI.md"
 fi
 
-# Allow override for non-standard installs (e.g. shell aliases that this
-# script can't see, or custom binary paths). Defaults to `gemini` in PATH.
+# Override with GEMINI_BIN=/path/to/gemini if `gemini` is a shell alias.
 GEMINI_BIN="${GEMINI_BIN:-gemini}"
-
-# Only require the gemini binary for skill mode; gemini-md mode just writes
-# a markdown file and doesn't need the CLI to be on PATH.
-if [[ "$MODE" == "skill" || "$MODE" == "both" ]]; then
-  if ! command -v "$GEMINI_BIN" >/dev/null 2>&1; then
-    echo "❌ '$GEMINI_BIN' not found in PATH (needed for skill mode)" >&2
-    echo "   If gemini is a shell alias, set GEMINI_BIN to the real path:" >&2
-    echo "     GEMINI_BIN=/path/to/gemini ./install_gemini-cli.sh --mode skill" >&2
-    exit 1
-  fi
-fi
 
 echo "📦 Installing andrej-karpathy-skills"
 echo "   mode:  $MODE"
