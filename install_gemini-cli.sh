@@ -49,9 +49,19 @@ else
   GEMINI_MD="$PWD/GEMINI.md"
 fi
 
-if ! command -v gemini >/dev/null 2>&1; then
-  echo "❌ gemini CLI not found in PATH" >&2
-  exit 1
+# Allow override for non-standard installs (e.g. shell aliases that this
+# script can't see, or custom binary paths). Defaults to `gemini` in PATH.
+GEMINI_BIN="${GEMINI_BIN:-gemini}"
+
+# Only require the gemini binary for skill mode; gemini-md mode just writes
+# a markdown file and doesn't need the CLI to be on PATH.
+if [[ "$MODE" == "skill" || "$MODE" == "both" ]]; then
+  if ! command -v "$GEMINI_BIN" >/dev/null 2>&1; then
+    echo "❌ '$GEMINI_BIN' not found in PATH (needed for skill mode)" >&2
+    echo "   If gemini is a shell alias, set GEMINI_BIN to the real path:" >&2
+    echo "     GEMINI_BIN=/path/to/gemini ./install_gemini-cli.sh --mode skill" >&2
+    exit 1
+  fi
 fi
 
 echo "📦 Installing andrej-karpathy-skills"
@@ -96,10 +106,10 @@ install_gemini_md() {
 # --- skill mode ----------------------------------------------------------
 install_skill() {
   echo "▶ Installing skill: karpathy-guidelines (scope: $SCOPE)"
-  if gemini skills install "$SKILL_DIR" --scope "$SCOPE" --consent >/dev/null 2>&1; then
+  if "$GEMINI_BIN" skills install "$SKILL_DIR" --scope "$SCOPE" --consent >/dev/null 2>&1; then
     echo "   ✓ installed"
   else
-    echo "   ❌ FAILED — try: gemini skills install $SKILL_DIR --scope $SCOPE --consent"
+    echo "   ❌ FAILED — try: $GEMINI_BIN skills install $SKILL_DIR --scope $SCOPE --consent"
     exit 1
   fi
 }

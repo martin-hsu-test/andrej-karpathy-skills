@@ -27,9 +27,11 @@ else
   GEMINI_MD="$PWD/GEMINI.md"
 fi
 
-if ! command -v gemini >/dev/null 2>&1; then
-  echo "❌ gemini CLI not found in PATH" >&2
-  exit 1
+# Allow override for shell aliases / non-PATH installs.
+GEMINI_BIN="${GEMINI_BIN:-gemini}"
+HAS_GEMINI=true
+if ! command -v "$GEMINI_BIN" >/dev/null 2>&1; then
+  HAS_GEMINI=false
 fi
 
 echo "🗑  Uninstalling andrej-karpathy-skills (scope: $SCOPE)"
@@ -53,7 +55,9 @@ fi
 
 # 2. Skill ----------------------------------------------------------------
 echo "▶ [2/2] Uninstalling skill: karpathy-guidelines"
-if gemini skills uninstall karpathy-guidelines --scope "$SCOPE" >/dev/null 2>&1; then
+if ! $HAS_GEMINI; then
+  echo "   (gemini CLI not found, skipped — set GEMINI_BIN if you used skill mode)"
+elif "$GEMINI_BIN" skills uninstall karpathy-guidelines --scope "$SCOPE" >/dev/null 2>&1; then
   echo "   ✓ removed"
 else
   echo "   (not installed, skipped)"

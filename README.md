@@ -125,8 +125,14 @@ gemini skills list | grep karpathy
 
 ## 故障排除
 
-**`gemini CLI not found in PATH`**
-→ 先安裝 Gemini CLI：[官方安裝說明](https://github.com/google-gemini/gemini-cli)
+**`'gemini' not found in PATH (needed for skill mode)`**
+→ 預設的 `--mode gemini-md` **不需要** Gemini CLI 在 PATH，只是寫檔。  
+→ 如果你用 `--mode skill` 卻碰到這個錯誤，可能是：
+  - 沒裝 Gemini CLI：[官方安裝說明](https://github.com/google-gemini/gemini-cli)
+  - **`gemini` 是 shell alias**（公司 setup 常見）：腳本看不到 alias，請用環境變數指定真實路徑：
+    ```bash
+    GEMINI_BIN=/path/to/real/gemini ./install_gemini-cli.sh --mode skill
+    ```
 
 **`gemini skills install` 失敗**
 → 你的 Gemini CLI 版本可能太舊，沒有 skills 子命令。改用預設的 `--mode gemini-md`，不需要 skills 支援。
